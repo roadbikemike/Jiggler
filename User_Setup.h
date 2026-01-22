@@ -1,0 +1,11 @@
+// User setup for ST7789 240x135 TFT
+#define ST7789_DRIVER
+#define TFT_WIDTH 240
+#define TFT_HEIGHT 135
+#define TFT_CS 15
+#define TFT_DC 2
+#define TFT_RST -1
+#define TOUCH_CS -1
+#define SPI_FREQUENCY 27000000
+#define SPI_READ_FREQUENCY 20000000
+#define SPI_TOUCH_FREQUENCY 2500000
