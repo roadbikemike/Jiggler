@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <BleMouse.h>
 #include <SPI.h>
-#define TOUCH_CS -1
 #include <TFT_eSPI.h>
 #include <Preferences.h>
 
@@ -16,8 +15,6 @@
 #define NUM_CHANNELS 3
 
 // Display Configs
-#define SCREEN_WIDTH 240
-#define SCREEN_HEIGHT 135
 #define DISPLAY_UPDATE_INTERVAL 500
 
 // Button Configs
@@ -158,7 +155,7 @@ void setup()
     // Logitech Inc
     bluetoothChannelOffset = preferences.getUShort("macoffset", 0);
     uint8_t macoffset = 0xAE + bluetoothChannelOffset;
-    uint8_t new_mac[8] = { 0xEC, 0x81, 0x93, 0x37, macoffset, 0xCB };
+    uint8_t new_mac[6] = { 0xEC, 0x81, 0x93, 0x37, macoffset, 0xCB };
     esp_base_mac_addr_set(new_mac);
 
     // Button pins
@@ -174,9 +171,16 @@ void setup()
 
     // Display
     display.begin();
-    if (display.width() != 240 || display.height() != 135)
+    if (display.width() != TFT_WIDTH || display.height() != TFT_HEIGHT)
     {
-        Serial.println("TFT init failed or size mismatch");
+        Serial.print("TFT init failed or size mismatch. Expected: ");
+        Serial.print(TFT_WIDTH);
+        Serial.print("x");
+        Serial.print(TFT_HEIGHT);
+        Serial.print(", Got: ");
+        Serial.print(display.width());
+        Serial.print("x");
+        Serial.println(display.height());
         for (;;); // Don't proceed, loop forever
     }
     display.setRotation(2);
