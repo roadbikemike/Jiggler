@@ -18,12 +18,6 @@
 // Display Configs
 #define SCREEN_WIDTH 240
 #define SCREEN_HEIGHT 135
-#undef TFT_CS
-#define TFT_CS 15
-#undef TFT_DC
-#define TFT_DC 2
-#undef TFT_RST
-#define TFT_RST -1
 #define DISPLAY_UPDATE_INTERVAL 500
 
 // Button Configs
@@ -174,6 +168,10 @@ void setup()
     // Bluetooth
     bleMouse.begin();
 
+    // Display backlight
+    pinMode(TFT_BL, OUTPUT);
+    digitalWrite(TFT_BL, HIGH);  // Turn on backlight
+
     // Display
     display.begin();
     if (display.width() != 240 || display.height() != 135)
@@ -200,6 +198,9 @@ void setup()
         bootAnim = (bootAnim + 1) % numAnimations;
         delay(200);
     }
+
+    // Initialize random seed for varied mouse movement patterns
+    randomSeed(esp_random());
 
     lastJiggle = millis();
 }
