@@ -34,8 +34,8 @@ ESP32 connects to a PC or mobile phone as a bluetooth mouse and jiggles every fe
 
 ## Credits
 
-Cloned from https://github.com/perryflynn/mouse-jiggler
-Original code by https://github.com/tornado67/DroChill
+- Cloned from https://github.com/perryflynn/mouse-jiggler
+- Original code by https://github.com/tornado67/DroChill
 
 
 ## License
