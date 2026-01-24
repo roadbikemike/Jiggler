@@ -190,21 +190,21 @@ void setup()
     Serial.println(display.height());
     Serial.println("Filling screen black...");
     display.fillScreen(TFT_BLACK);
-    display.setTextSize(1);
+    display.setTextSize(2);  // Larger text size
     display.setTextColor(TFT_WHITE);
 
     // Boot message
     Serial.println("Drawing boot message...");
-    display.setCursor(2, 0);
+    display.setCursor(5, 5);
     display.print("Mouse Jiggler");
-    display.setCursor(2, 11);
+    display.setCursor(5, 25);
     display.print("Initializing...");
     Serial.println("Boot message drawn.");
     unsigned long bootStart = millis();
     int8_t bootAnim = 0;
     while (millis() - bootStart < 2000)
     {
-        display.setCursor(100, 11);
+        display.setCursor(200, 25);
         display.print(animation[bootAnim]);
         bootAnim = (bootAnim + 1) % numAnimations;
         delay(200);
@@ -278,13 +278,14 @@ void loop()
     if (dirty)
     {
         display.fillScreen(TFT_BLACK);
-        display.setCursor(2, 0);
+        display.setTextSize(2);
+        display.setCursor(5, 5);
         if (connected)
         {
             if (running)
             {
                 display.setTextColor(TFT_GREEN);
-                display.print("Jiggling...");
+                display.print("Jiggling");
             }
             else
             {
@@ -295,25 +296,25 @@ void loop()
         else
         {
             display.setTextColor(TFT_RED);
-            display.print("Not connected");
+            display.print("Waiting");
         }
 
         if (connected && running)
         {
             display.setTextColor(TFT_WHITE);
-            display.setCursor(120, 0);
+            display.setCursor(200, 5);
             i_animation = (i_animation + 1) % numAnimations;
             display.print(animation[i_animation]);
 
-            display.setCursor(2, 11);
-            sprintf (s, "Next in %ds", nextJiggleDiff / 1000);
+            display.setCursor(5, 30);
+            sprintf (s, "Next: %ds", nextJiggleDiff / 1000);
             display.print(s);
 
             // Progress bar
-            int barWidth = 200;
-            int barHeight = 5;
-            int barX = 20;
-            int barY = 25;
+            int barWidth = 220;
+            int barHeight = 8;
+            int barX = 10;
+            int barY = 55;
             long elapsed = jiggle_interval - nextJiggleDiff;
             int progress = (elapsed * barWidth) / jiggle_interval;
             progress = constrain(progress, 0, barWidth);
@@ -322,12 +323,12 @@ void loop()
         }
 
         display.setTextColor(TFT_WHITE);
-        display.setCursor(2, 22);
-        sprintf (s, "Intv: %ds", intervals[current_interval]);
+        display.setCursor(5, 75);
+        sprintf (s, "Int:%ds", intervals[current_interval]);
         display.print(s);
 
-        display.setCursor(96, 22);
-        sprintf (s, "Ch: %d", bluetoothChannelOffset);
+        display.setCursor(130, 75);
+        sprintf (s, "Ch:%d", bluetoothChannelOffset);
         display.print(s);
 
         dirty = false;
