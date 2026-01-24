@@ -1,8 +1,7 @@
 # ESP32 Bluetooth Mouse Jiggler
 
-ESP32 connects to a PC or mobile phone as a bluetooth mouse and jiggles every few seconds to keep the screen alive.
+ESP32 connects to a PC or mobile phone as a bluetooth mouse and jiggles every few seconds to keep the screen alive.  Code updated to work with the HiLetgo ESP32 LCD WiFi Kit ESP-32 1.14 Inch LCD Display WiFi+Bluetooth CH9102 USB Type-C Internet Development Board for Arduino ESP8266 NodeMCU.  Nicer option with integrated color display.
 
-![demo](demo.gif)
 
 ## Features
 
@@ -22,8 +21,7 @@ ESP32 connects to a PC or mobile phone as a bluetooth mouse and jiggles every fe
 
 ## Parts
 
-- ESP32 NodeMCU
-- SSD1306 I2C OLED Display (128x32 pixels)
+- HiLetgo ESP32 LCD WiFi Kit
 - 2x push button
 
 ## Setup
@@ -36,7 +34,9 @@ ESP32 connects to a PC or mobile phone as a bluetooth mouse and jiggles every fe
 
 ## Credits
 
-Original code by https://github.com/tornado67/DroChill
+- Cloned from https://github.com/perryflynn/mouse-jiggler
+- Original code by https://github.com/tornado67/DroChill
+
 
 ## License
 
