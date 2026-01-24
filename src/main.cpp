@@ -18,8 +18,8 @@
 #define DISPLAY_UPDATE_INTERVAL 500
 
 // Button Configs
-#define BUTTON_UP 12
-#define BUTTON_DOWN 21
+#define BUTTON_UP 0
+#define BUTTON_DOWN 35
 #define DEBOUNCE_DELAY 250
 #define LONG_PRESS 1000
 
@@ -132,6 +132,7 @@ bool running = true;
 bool connected = false;
 bool newConnectState = false;
 bool dirty = true;
+bool fullRedraw = true;  // Flag for full screen redraw vs partial update
 int nextJiggleDiff;
 int intervals[] = INTERVAL_LIST;
 size_t numIntervals = sizeof(intervals) / sizeof(intervals[0]);
@@ -231,6 +232,7 @@ void loop()
         Serial.println("shortpressed_top");
         running = !running;
         dirty = true;
+        fullRedraw = true;  // State changed, need full redraw
         lastJiggle = now;
 
         preferences.putBool("isrunning", running);
@@ -245,6 +247,7 @@ void loop()
     {
         Serial.println("shortpressed_bottom");
         dirty = true;
+        fullRedraw = true;  // Interval changed, need full redraw
         current_interval = (current_interval + 1) % numIntervals;
         jiggle_interval = intervals[current_interval] * 1000;
         lastJiggle = now;
@@ -265,6 +268,7 @@ void loop()
         connected = newConnectState;
         jiggle_interval = intervals[current_interval] * 1000;
         dirty = true;
+        fullRedraw = true;  // Connection state changed, need full redraw
 
         if (!connected)
         {
@@ -277,35 +281,57 @@ void loop()
 
     if (dirty)
     {
-        display.fillScreen(TFT_BLACK);
         display.setTextSize(2);
-        display.setCursor(5, 5);
-        if (connected)
+
+        if (fullRedraw)
         {
-            if (running)
+            // Full screen redraw - clear everything
+            display.fillScreen(TFT_BLACK);
+
+            // Draw status
+            display.setCursor(5, 5);
+            if (connected)
             {
-                display.setTextColor(TFT_GREEN);
-                display.print("Jiggling");
+                if (running)
+                {
+                    display.setTextColor(TFT_GREEN);
+                    display.print("Jiggling");
+                }
+                else
+                {
+                    display.setTextColor(TFT_YELLOW);
+                    display.print("Standby");
+                }
             }
             else
             {
-                display.setTextColor(TFT_YELLOW);
-                display.print("Standby");
+                display.setTextColor(TFT_RED);
+                display.print("Waiting");
             }
-        }
-        else
-        {
-            display.setTextColor(TFT_RED);
-            display.print("Waiting");
+
+            // Draw static labels
+            display.setTextColor(TFT_WHITE);
+            display.setCursor(5, 75);
+            sprintf (s, "Int:%ds", intervals[current_interval]);
+            display.print(s);
+
+            display.setCursor(130, 75);
+            sprintf (s, "Ch:%d", bluetoothChannelOffset);
+            display.print(s);
+
+            fullRedraw = false;
         }
 
         if (connected && running)
         {
+            // Update dynamic content only (no screen clear)
             display.setTextColor(TFT_WHITE);
             display.setCursor(200, 5);
             i_animation = (i_animation + 1) % numAnimations;
             display.print(animation[i_animation]);
 
+            // Clear countdown area and redraw
+            display.fillRect(5, 30, 120, 20, TFT_BLACK);
             display.setCursor(5, 30);
             sprintf (s, "Next: %ds", nextJiggleDiff / 1000);
             display.print(s);
@@ -318,18 +344,12 @@ void loop()
             long elapsed = jiggle_interval - nextJiggleDiff;
             int progress = (elapsed * barWidth) / jiggle_interval;
             progress = constrain(progress, 0, barWidth);
+
+            // Clear bar area and redraw
+            display.fillRect(barX, barY, barWidth, barHeight, TFT_BLACK);
             display.drawRect(barX, barY, barWidth, barHeight, TFT_WHITE);
             display.fillRect(barX, barY, progress, barHeight, TFT_GREEN);
         }
-
-        display.setTextColor(TFT_WHITE);
-        display.setCursor(5, 75);
-        sprintf (s, "Int:%ds", intervals[current_interval]);
-        display.print(s);
-
-        display.setCursor(130, 75);
-        sprintf (s, "Ch:%d", bluetoothChannelOffset);
-        display.print(s);
 
         dirty = false;
         lastDisplayUpdate = now;
