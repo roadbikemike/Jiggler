@@ -23,6 +23,11 @@
 #define DEBOUNCE_DELAY 250
 #define LONG_PRESS 1000
 
+// Backlight pin for TTGO T-Display (Setup25 doesn't define this)
+#ifndef TFT_BL
+#define TFT_BL 4
+#endif
+
 // Types
 #define BUTTON_NONE 0
 #define BUTTON_PRESS 1
