@@ -8,10 +8,10 @@
 #define X_RANDOM_RANGE 3
 #define Y_RANDOM_RANGE 3
 #define JIGGLE_STEP_INTERVAL 50
-#define JIGGLE_MIN_DISTANCE 1       // Smaller movements (1-5 pixels)
+#define JIGGLE_MIN_DISTANCE 1        // Smaller movements (1-5 pixels)
 #define JIGGLE_MAX_DISTANCE 5
-#define JIGGLE_TIME_VARIANCE 20   // +/- 20 seconds random timing variance (in milliseconds)
-#define INTERVAL_LIST { 30, 90, 180, 300, 600, 900 }
+#define JIGGLE_TIME_VARIANCE 20000   // +/- 20 seconds random timing variance (in milliseconds)
+#define INTERVAL_LIST { 60, 90, 180, 300, 600, 900 }
 #define DEFAULT_INTERVAL 2
 #define NUM_CHANNELS 3
 
