@@ -170,7 +170,8 @@ void setup()
     digitalWrite(TFT_BL, HIGH);  // Turn on backlight
 
     // Display
-    display.begin();
+    display.init();
+    display.setRotation(1);  // 90° landscape (text across length)
     if (display.width() != TFT_WIDTH || display.height() != TFT_HEIGHT)
     {
         Serial.print("TFT init failed or size mismatch. Expected: ");
@@ -183,7 +184,6 @@ void setup()
         Serial.println(display.height());
         for (;;); // Don't proceed, loop forever
     }
-    display.setRotation(2);
     display.fillScreen(TFT_BLACK);
     display.setTextSize(1);
     display.setTextColor(TFT_WHITE);
