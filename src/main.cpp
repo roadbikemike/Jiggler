@@ -10,7 +10,7 @@
 #define JIGGLE_STEP_INTERVAL 50
 #define JIGGLE_MIN_DISTANCE 1       // Smaller movements (1-5 pixels)
 #define JIGGLE_MAX_DISTANCE 5
-#define JIGGLE_TIME_VARIANCE 5000   // +/- 5 seconds random timing variance (in milliseconds)
+#define JIGGLE_TIME_VARIANCE 20   // +/- 20 seconds random timing variance (in milliseconds)
 #define INTERVAL_LIST { 30, 90, 180, 300, 600, 900 }
 #define DEFAULT_INTERVAL 2
 #define NUM_CHANNELS 3
@@ -42,7 +42,7 @@ struct ButtonState {
 };
 
 // Initialize Bluetooth
-BleMouse bleMouse("Microsoft Mouse", "Home Based Technologies", 42);
+BleMouse bleMouse("Logitech M510", "Logitech", 100);
 
 // Initialize Display
 TFT_eSPI display;
@@ -165,7 +165,12 @@ void setup()
     // Logitech Inc
     bluetoothChannelOffset = preferences.getUShort("macoffset", 0);
     uint8_t macoffset = 0xAE + bluetoothChannelOffset;
-    uint8_t new_mac[6] = { 0xEC, 0x81, 0x93, 0x37, macoffset, 0xCB };
+
+    // Original mac configuration
+    //uint8_t new_mac[6] = { 0xEC, 0x81, 0x93, 0x37, macoffset, 0xCB };
+    
+    // Matches Logitech M510
+    uint8_t new_mac[6] = { 0x00, 0x1F, 0x20, 0x37, macoffset, 0xCB };
     esp_base_mac_addr_set(new_mac);
 
     // Button pins
