@@ -172,6 +172,7 @@ void setup()
     // Display
     display.init();
     display.setRotation(1);  // 90° landscape (text across length)
+    display.setSwapBytes(true);  // Swap byte order for correct color rendering
     if (display.width() != TFT_WIDTH || display.height() != TFT_HEIGHT)
     {
         Serial.print("TFT init failed or size mismatch. Expected: ");
