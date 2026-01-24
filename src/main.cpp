@@ -142,6 +142,8 @@ char animation[] = { '-', '\\', '|', '/' };
 size_t numAnimations = sizeof(animation) / sizeof(animation[0]);
 int8_t i_animation = 0;
 char s [22];
+int lastDisplayedSeconds = -1;  // Track last displayed countdown to avoid unnecessary redraws
+int lastProgress = -1;  // Track last progress bar value
 
 void setup()
 {
@@ -320,26 +322,34 @@ void loop()
             display.print(s);
 
             fullRedraw = false;
+            lastDisplayedSeconds = -1;  // Reset to force countdown update
+            lastProgress = -1;  // Reset to force progress bar update
         }
 
         if (connected && running)
         {
             // Update dynamic content only (no screen clear)
 
-            // Spinner with background color to auto-clear
+            // Spinner - always animate
             display.setTextColor(TFT_WHITE, TFT_BLACK);  // White text on black background
             display.fillRect(200, 5, 24, 20, TFT_BLACK);  // Clear larger area
             display.setCursor(200, 5);
             i_animation = (i_animation + 1) % numAnimations;
             display.print(animation[i_animation]);
 
-            // Clear countdown area and redraw
-            display.fillRect(5, 30, 120, 20, TFT_BLACK);
-            display.setCursor(5, 30);
-            sprintf (s, "Next: %ds", nextJiggleDiff / 1000);
-            display.print(s);
+            // Countdown - only update when seconds change
+            int currentSeconds = nextJiggleDiff / 1000;
+            if (currentSeconds != lastDisplayedSeconds)
+            {
+                display.setTextColor(TFT_WHITE, TFT_BLACK);
+                display.fillRect(5, 30, 120, 20, TFT_BLACK);
+                display.setCursor(5, 30);
+                sprintf (s, "Next: %ds", currentSeconds);
+                display.print(s);
+                lastDisplayedSeconds = currentSeconds;
+            }
 
-            // Progress bar
+            // Progress bar - only update when progress changes
             int barWidth = 220;
             int barHeight = 8;
             int barX = 10;
@@ -348,10 +358,14 @@ void loop()
             int progress = (elapsed * barWidth) / jiggle_interval;
             progress = constrain(progress, 0, barWidth);
 
-            // Clear bar area and redraw
-            display.fillRect(barX, barY, barWidth, barHeight, TFT_BLACK);
-            display.drawRect(barX, barY, barWidth, barHeight, TFT_WHITE);
-            display.fillRect(barX, barY, progress, barHeight, TFT_GREEN);
+            if (progress != lastProgress)
+            {
+                // Only redraw bar when progress changes
+                display.fillRect(barX, barY, barWidth, barHeight, TFT_BLACK);
+                display.drawRect(barX, barY, barWidth, barHeight, TFT_WHITE);
+                display.fillRect(barX, barY, progress, barHeight, TFT_GREEN);
+                lastProgress = progress;
+            }
         }
 
         dirty = false;
