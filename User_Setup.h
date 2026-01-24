@@ -14,4 +14,4 @@
 #define SPI_FREQUENCY 27000000
 #define SPI_READ_FREQUENCY 20000000
 #define SPI_TOUCH_FREQUENCY 2500000
-#define TFT_INVERSION_ON    // CRITICAL: Fix color/pixel corruption for TTGO T-Display
+#define TFT_INVERSION_OFF    // Try OFF instead - some TTGO variants need this
