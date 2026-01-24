@@ -171,20 +171,16 @@ void setup()
 
     // Display
     display.init();
-    display.setRotation(1);  // 90° landscape (text across length)
-    display.setSwapBytes(true);  // Swap byte order for correct color rendering
-    if (display.width() != TFT_WIDTH || display.height() != TFT_HEIGHT)
+    // Check dimensions in default portrait mode (Setup25 defines as 135x240)
+    if (display.width() != 135 || display.height() != 240)
     {
-        Serial.print("TFT init failed or size mismatch. Expected: ");
-        Serial.print(TFT_WIDTH);
-        Serial.print("x");
-        Serial.print(TFT_HEIGHT);
-        Serial.print(", Got: ");
+        Serial.print("TFT init failed or size mismatch. Expected: 135x240, Got: ");
         Serial.print(display.width());
         Serial.print("x");
         Serial.println(display.height());
         for (;;); // Don't proceed, loop forever
     }
+    display.setRotation(1);  // Rotate to landscape (becomes 240x135)
     display.fillScreen(TFT_BLACK);
     display.setTextSize(1);
     display.setTextColor(TFT_WHITE);
