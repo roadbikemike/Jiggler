@@ -8,8 +8,9 @@
 #define X_RANDOM_RANGE 3
 #define Y_RANDOM_RANGE 3
 #define JIGGLE_STEP_INTERVAL 50
-#define JIGGLE_MIN_DISTANCE 5
-#define JIGGLE_MAX_DISTANCE 20
+#define JIGGLE_MIN_DISTANCE 1       // Smaller movements (1-5 pixels)
+#define JIGGLE_MAX_DISTANCE 5
+#define JIGGLE_TIME_VARIANCE 5000   // +/- 5 seconds random timing variance (in milliseconds)
 #define INTERVAL_LIST { 30, 90, 180, 300, 600, 900 }
 #define DEFAULT_INTERVAL 2
 #define NUM_CHANNELS 3
@@ -41,7 +42,7 @@ struct ButtonState {
 };
 
 // Initialize Bluetooth
-BleMouse bleMouse("Bluetooth Mouse 4.2", "Home Based Technologies", 42);
+BleMouse bleMouse("Microsoft Mouse", "Home Based Technologies", 42);
 
 // Initialize Display
 TFT_eSPI display;
@@ -144,6 +145,7 @@ int8_t i_animation = 0;
 char s [22];
 int lastDisplayedSeconds = -1;  // Track last displayed countdown to avoid unnecessary redraws
 int lastProgress = -1;  // Track last progress bar value
+unsigned long jiggleCount = 0;  // Total number of jiggles since boot
 
 void setup()
 {
@@ -290,13 +292,17 @@ void loop()
                 display.print("Waiting");
             }
 
-            // Draw static labels
+            // Draw static labels and jiggle count
             display.setTextColor(TFT_WHITE);
             display.setCursor(5, 75);
+            sprintf (s, "J:%lu", jiggleCount);
+            display.print(s);
+
+            display.setCursor(80, 75);
             sprintf (s, "Int:%ds", intervals[current_interval]);
             display.print(s);
 
-            display.setCursor(130, 75);
+            display.setCursor(180, 75);
             sprintf (s, "Ch:%d", bluetoothChannelOffset);
             display.print(s);
 
@@ -316,18 +322,30 @@ void loop()
             display.print(animation[i_animation]);
             display.print(" ");  // Print space to clear any trailing pixels
 
-            // Countdown - only update when seconds change
+            // Countdown - only update when seconds change, with dynamic color
             int currentSeconds = nextJiggleDiff / 1000;
             if (currentSeconds != lastDisplayedSeconds)
             {
-                display.setTextColor(TFT_WHITE, TFT_BLACK);  // Background color auto-clears
+                // Calculate percentage of time remaining
+                int percentRemaining = (nextJiggleDiff * 100) / jiggle_interval;
+
+                // Choose color based on time remaining
+                uint16_t countdownColor;
+                if (percentRemaining > 50)
+                    countdownColor = TFT_GREEN;      // Plenty of time
+                else if (percentRemaining > 25)
+                    countdownColor = TFT_YELLOW;     // Getting close
+                else
+                    countdownColor = TFT_ORANGE;     // About to jiggle!
+
+                display.setTextColor(countdownColor, TFT_BLACK);  // Dynamic color with background
                 display.setCursor(5, 30);
                 sprintf (s, "Next: %3ds", currentSeconds);  // Fixed width with space padding
                 display.print(s);
                 lastDisplayedSeconds = currentSeconds;
             }
 
-            // Progress bar - only update when progress changes
+            // Progress bar - only update when progress changes, with color gradient
             int barWidth = 220;
             int barHeight = 8;
             int barX = 10;
@@ -338,10 +356,22 @@ void loop()
 
             if (progress != lastProgress)
             {
+                // Calculate percentage complete
+                int percentComplete = (elapsed * 100) / jiggle_interval;
+
+                // Choose bar color based on progress
+                uint16_t barColor;
+                if (percentComplete < 50)
+                    barColor = TFT_GREEN;      // First half - green
+                else if (percentComplete < 75)
+                    barColor = TFT_YELLOW;     // Third quarter - yellow
+                else
+                    barColor = TFT_ORANGE;     // Final quarter - orange (almost done!)
+
                 // Only redraw bar when progress changes
                 display.fillRect(barX, barY, barWidth, barHeight, TFT_BLACK);
                 display.drawRect(barX, barY, barWidth, barHeight, TFT_WHITE);
-                display.fillRect(barX, barY, progress, barHeight, TFT_GREEN);
+                display.fillRect(barX, barY, progress, barHeight, barColor);
                 lastProgress = progress;
             }
         }
@@ -352,7 +382,12 @@ void loop()
 
     if (connected && running && nextJiggleDiff <= 0)
     {
-        lastJiggle = now;
+        // Add random timing variance (+/- 5 seconds) to make timing less predictable
+        int timeVariance = random(-JIGGLE_TIME_VARIANCE, JIGGLE_TIME_VARIANCE + 1);
+        lastJiggle = now - timeVariance;
         moveMouse();
+        jiggleCount++;
+        fullRedraw = true;  // Force redraw to update jiggle count
+        dirty = true;
     }
 }
