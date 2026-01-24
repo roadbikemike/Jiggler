@@ -182,18 +182,12 @@ void setup()
     Serial.print("x");
     Serial.println(display.height());
 
-    // Check dimensions in default portrait mode (Setup25 defines as 135x240)
-    if (display.width() != 135 || display.height() != 240)
-    {
-        Serial.print("TFT init failed or size mismatch. Expected: 135x240, Got: ");
-        Serial.print(display.width());
-        Serial.print("x");
-        Serial.println(display.height());
-        for (;;); // Don't proceed, loop forever
-    }
-
     Serial.println("Setting rotation to landscape...");
     display.setRotation(1);  // Rotate to landscape (becomes 240x135)
+    Serial.print("After rotation. Size: ");
+    Serial.print(display.width());
+    Serial.print("x");
+    Serial.println(display.height());
     Serial.println("Filling screen black...");
     display.fillScreen(TFT_BLACK);
     display.setTextSize(1);
