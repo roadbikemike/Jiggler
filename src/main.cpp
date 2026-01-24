@@ -175,7 +175,13 @@ void setup()
     digitalWrite(TFT_BL, HIGH);  // Turn on backlight
 
     // Display
+    Serial.println("Initializing display...");
     display.init();
+    Serial.print("Display initialized. Size: ");
+    Serial.print(display.width());
+    Serial.print("x");
+    Serial.println(display.height());
+
     // Check dimensions in default portrait mode (Setup25 defines as 135x240)
     if (display.width() != 135 || display.height() != 240)
     {
@@ -185,16 +191,21 @@ void setup()
         Serial.println(display.height());
         for (;;); // Don't proceed, loop forever
     }
+
+    Serial.println("Setting rotation to landscape...");
     display.setRotation(1);  // Rotate to landscape (becomes 240x135)
+    Serial.println("Filling screen black...");
     display.fillScreen(TFT_BLACK);
     display.setTextSize(1);
     display.setTextColor(TFT_WHITE);
 
     // Boot message
+    Serial.println("Drawing boot message...");
     display.setCursor(2, 0);
     display.print("Mouse Jiggler");
     display.setCursor(2, 11);
     display.print("Initializing...");
+    Serial.println("Boot message drawn.");
     unsigned long bootStart = millis();
     int8_t bootAnim = 0;
     while (millis() - bootStart < 2000)
