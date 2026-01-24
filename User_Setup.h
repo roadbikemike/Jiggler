@@ -3,7 +3,7 @@
 #define CGRAM_OFFSET        // CRITICAL: Fix pixel addressing for TTGO T-Display
 #define TFT_WIDTH 240
 #define TFT_HEIGHT 135
-#define TFT_RGB_ORDER TFT_RGB  // RGB color order for TTGO T-Display
+#define TFT_RGB_ORDER TFT_BGR  // BGR color order for TTGO T-Display
 #define TFT_MOSI 19
 #define TFT_SCLK 18
 #define TFT_CS 5
