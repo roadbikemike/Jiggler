@@ -15,7 +15,7 @@
 #define NUM_CHANNELS 3
 
 // Display Configs
-#define DISPLAY_UPDATE_INTERVAL 500
+#define DISPLAY_UPDATE_INTERVAL 1000  // Reduce update frequency to 1 second for smoother display
 
 // Button Configs
 #define BUTTON_UP 0
@@ -178,31 +178,17 @@ void setup()
     digitalWrite(TFT_BL, HIGH);  // Turn on backlight
 
     // Display
-    Serial.println("Initializing display...");
     display.init();
-    Serial.print("Display initialized. Size: ");
-    Serial.print(display.width());
-    Serial.print("x");
-    Serial.println(display.height());
-
-    Serial.println("Setting rotation to landscape...");
     display.setRotation(1);  // Rotate to landscape (becomes 240x135)
-    Serial.print("After rotation. Size: ");
-    Serial.print(display.width());
-    Serial.print("x");
-    Serial.println(display.height());
-    Serial.println("Filling screen black...");
     display.fillScreen(TFT_BLACK);
     display.setTextSize(2);  // Larger text size
     display.setTextColor(TFT_WHITE);
 
     // Boot message
-    Serial.println("Drawing boot message...");
     display.setCursor(5, 5);
     display.print("Mouse Jiggler");
     display.setCursor(5, 25);
     display.print("Initializing...");
-    Serial.println("Boot message drawn.");
     unsigned long bootStart = millis();
     int8_t bootAnim = 0;
     while (millis() - bootStart < 2000)
@@ -231,7 +217,6 @@ void loop()
     buttonResult = buttonState(BUTTON_UP, now, &buttonStateTop);
     if (buttonResult == BUTTON_PRESS)
     {
-        Serial.println("shortpressed_top");
         running = !running;
         dirty = true;
         fullRedraw = true;  // State changed, need full redraw
@@ -239,15 +224,10 @@ void loop()
 
         preferences.putBool("isrunning", running);
     }
-    else if (buttonResult == BUTTON_LONGPRESS)
-    {
-        Serial.println("longpressed_top");
-    }
 
     buttonResult = buttonState(BUTTON_DOWN, now, &buttonStateBottom);
     if (buttonResult == BUTTON_PRESS)
     {
-        Serial.println("shortpressed_bottom");
         dirty = true;
         fullRedraw = true;  // Interval changed, need full redraw
         current_interval = (current_interval + 1) % numIntervals;
@@ -257,7 +237,6 @@ void loop()
     }
     else if (buttonResult == BUTTON_LONGPRESS)
     {
-        Serial.println("longpressed_bottom");
         preferences.putUShort("macoffset", (preferences.getUShort("macoffset", 0) + 1) % NUM_CHANNELS);
 
         // TODO: solve issues with restarting BleMouse
@@ -331,20 +310,19 @@ void loop()
             // Update dynamic content only (no screen clear)
 
             // Spinner - always animate
-            display.setTextColor(TFT_WHITE, TFT_BLACK);  // White text on black background
-            display.fillRect(200, 5, 24, 20, TFT_BLACK);  // Clear larger area
+            display.setTextColor(TFT_WHITE, TFT_BLACK);  // White text on black background auto-clears
             display.setCursor(200, 5);
             i_animation = (i_animation + 1) % numAnimations;
             display.print(animation[i_animation]);
+            display.print(" ");  // Print space to clear any trailing pixels
 
             // Countdown - only update when seconds change
             int currentSeconds = nextJiggleDiff / 1000;
             if (currentSeconds != lastDisplayedSeconds)
             {
-                display.setTextColor(TFT_WHITE, TFT_BLACK);
-                display.fillRect(5, 30, 120, 20, TFT_BLACK);
+                display.setTextColor(TFT_WHITE, TFT_BLACK);  // Background color auto-clears
                 display.setCursor(5, 30);
-                sprintf (s, "Next: %ds", currentSeconds);
+                sprintf (s, "Next: %3ds", currentSeconds);  // Fixed width with space padding
                 display.print(s);
                 lastDisplayedSeconds = currentSeconds;
             }

@@ -5,13 +5,13 @@ ESP32 connects to a PC or mobile phone as a bluetooth mouse and jiggles every fe
 
 ## Features
 
-- OLED Display (status, countdown to next jiggle, configured interval, configured channel/MAC)
-- Start/Pause button (short press on upper button)
-- Jiggle Interval configurable by button (short press on lower button)
-- Use the jiggler on up to three devices (long press on lower button)
+- 1.14" Color TFT Display (status, countdown to next jiggle, progress bar, configured interval, configured channel/MAC)
+- Start/Pause button (short press on left button - GPIO 0)
+- Jiggle Interval configurable by button (short press on right button - GPIO 35)
+- Use the jiggler on up to three devices (long press on right button)
 - Saves current settings to flash
 - Undetectable
-- No setup required
+- No soldering required - uses built-in buttons
 - Simple and reliable
 
 ## Known limitations
@@ -21,8 +21,11 @@ ESP32 connects to a PC or mobile phone as a bluetooth mouse and jiggles every fe
 
 ## Parts
 
-- HiLetgo ESP32 LCD WiFi Kit
-- 2x push button
+- TTGO T-Display ESP32 (or compatible board with ST7789 1.14" 240x135 TFT display)
+  - Example: HiLetgo ESP32 LCD WiFi Kit ESP-32 1.14 Inch LCD
+  - Built-in buttons on GPIO 0 and GPIO 35
+  - Built-in ST7789V display
+  - No additional components needed!
 
 ## Setup
 
