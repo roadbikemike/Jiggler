@@ -325,10 +325,10 @@ void loop()
         if (connected && running)
         {
             // Update dynamic content only (no screen clear)
-            display.setTextColor(TFT_WHITE);
 
-            // Clear spinner area and redraw
-            display.fillRect(200, 5, 20, 20, TFT_BLACK);
+            // Spinner with background color to auto-clear
+            display.setTextColor(TFT_WHITE, TFT_BLACK);  // White text on black background
+            display.fillRect(200, 5, 24, 20, TFT_BLACK);  // Clear larger area
             display.setCursor(200, 5);
             i_animation = (i_animation + 1) % numAnimations;
             display.print(animation[i_animation]);
