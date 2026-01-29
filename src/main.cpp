@@ -19,7 +19,7 @@
 #define NUM_CHANNELS 3
 
 // Display Configs
-#define DISPLAY_UPDATE_INTERVAL 1000  // Reduce update frequency to 1 second for smoother display
+#define DISPLAY_UPDATE_INTERVAL 1000  // Display refresh rate (milliseconds)
 
 // Button Configs
 #define BUTTON_UP 0
@@ -27,7 +27,7 @@
 #define DEBOUNCE_DELAY 250
 #define LONG_PRESS 1000
 
-// Backlight pin for TTGO T-Display (Setup25 doesn't define this)
+// Backlight pin for TTGO T-Display
 #ifndef TFT_BL
 #define TFT_BL 4
 #endif
@@ -148,32 +148,44 @@ short buttonState(int pin, unsigned long now, ButtonState *buttonState)
     return BUTTON_NONE;
 }
 
-// --> Logic
+// --> Global State Variables
 
+// Bluetooth & Connection State
 unsigned short bluetoothChannelOffset = 0;
-unsigned long now = 0;
-ButtonState buttonStateTop;
-ButtonState buttonStateBottom;
-short buttonResult;
-unsigned long lastJiggle;
-unsigned long lastDisplayUpdate = 0;
 bool running = true;
 bool connected = false;
 bool newConnectState = false;
-bool dirty = true;
-bool fullRedraw = true;  // Flag for full screen redraw vs partial update
+
+// Timing & Jiggle State
+unsigned long now = 0;
+unsigned long lastJiggle;
 int nextJiggleDiff;
 int intervals[] = INTERVAL_LIST;
 size_t numIntervals = sizeof(intervals) / sizeof(intervals[0]);
 int current_interval;
 int jiggle_interval;
-char animation[] = { '-', '\\', '|', '/' };
-size_t numAnimations = sizeof(animation) / sizeof(animation[0]);
-int8_t i_animation = 0;
-char s [22];
+unsigned long jiggleCount = 0;  // Total number of jiggles since boot
+
+// Button State Variables
+ButtonState buttonStateTop;
+ButtonState buttonStateBottom;
+short buttonResult;
+
+// Display State Variables
+unsigned long lastDisplayUpdate = 0;
+bool dirty = true;
+bool fullRedraw = true;  // Flag for full screen redraw vs partial update
 int lastDisplayedSeconds = -1;  // Track last displayed countdown to avoid unnecessary redraws
 int lastProgress = -1;  // Track last progress bar value
-unsigned long jiggleCount = 0;  // Total number of jiggles since boot
+char s [22];  // String buffer for display formatting
+
+// Display Animation Variables
+char animation[] = { '◜', '◝', '◞', '◟' };  // Circular quadrant animation
+size_t numAnimations = sizeof(animation) / sizeof(animation[0]);
+int8_t i_animation = 0;
+int8_t i_rainbow = 0;  // Rainbow color index for spinner
+uint16_t rainbowColors[] = { TFT_RED, TFT_ORANGE, TFT_YELLOW, TFT_GREEN, TFT_CYAN, TFT_BLUE, TFT_MAGENTA };
+size_t numRainbowColors = sizeof(rainbowColors) / sizeof(rainbowColors[0]);
 
 void setup()
 {
@@ -216,19 +228,23 @@ void setup()
     display.init();
     display.setRotation(1);  // Rotate to landscape (becomes 240x135)
     display.fillScreen(TFT_BLACK);
-    display.setTextSize(2);  // Larger text size
+    display.setTextSize(3);  // Bigger text size
     display.setTextColor(TFT_WHITE);
 
     // Boot message
-    display.setCursor(5, 5);
-    display.print("Mouse Jiggler");
-    display.setCursor(5, 25);
-    display.print("Initializing...");
+    display.setCursor(5, 10);
+    display.print("Mouse");
+    display.setCursor(5, 40);
+    display.print("Jiggler");
+    display.setTextSize(2);
+    display.setCursor(5, 80);
+    display.print("Starting...");
     unsigned long bootStart = millis();
     int8_t bootAnim = 0;
     while (millis() - bootStart < 2000)
     {
-        display.setCursor(200, 25);
+        display.setTextSize(2);
+        display.setCursor(200, 80);
         display.print(animation[bootAnim]);
         bootAnim = (bootAnim + 1) % numAnimations;
         delay(200);
@@ -274,7 +290,7 @@ void loop()
     {
         preferences.putUShort("macoffset", (preferences.getUShort("macoffset", 0) + 1) % NUM_CHANNELS);
 
-        // TODO: solve issues with restarting BleMouse
+        // Restart required to apply new Bluetooth MAC address
         ESP.restart();
     }
 
@@ -297,7 +313,7 @@ void loop()
 
     if (dirty)
     {
-        display.setTextSize(2);
+        display.setTextSize(3);  // Bigger text throughout
 
         if (fullRedraw)
         {
@@ -311,32 +327,24 @@ void loop()
                 if (running)
                 {
                     display.setTextColor(TFT_GREEN);
-                    display.print("Jiggling");
+                    display.print("Jiggle");
                 }
                 else
                 {
                     display.setTextColor(TFT_YELLOW);
-                    display.print("Standby");
+                    display.print("Paused");
                 }
             }
             else
             {
                 display.setTextColor(TFT_RED);
-                display.print("Waiting");
+                display.print("Wait");
             }
 
             // Draw static labels and jiggle count
             display.setTextColor(TFT_WHITE);
-            display.setCursor(5, 75);
-            sprintf (s, "J:%lu", jiggleCount);
-            display.print(s);
-
-            display.setCursor(80, 75);
-            sprintf (s, "Int:%ds", intervals[current_interval]);
-            display.print(s);
-
-            display.setCursor(180, 75);
-            sprintf (s, "Ch:%d", bluetoothChannelOffset);
+            display.setCursor(5, 105);
+            sprintf (s, "J:%-3lu I:%-3d C:%d", jiggleCount, intervals[current_interval], bluetoothChannelOffset);
             display.print(s);
 
             fullRedraw = false;
@@ -348,10 +356,11 @@ void loop()
         {
             // Update dynamic content only (no screen clear)
 
-            // Spinner - always animate
-            display.setTextColor(TFT_WHITE, TFT_BLACK);  // White text on black background auto-clears
-            display.setCursor(200, 5);
+            // Rainbow Spinner - cycles through colors
+            i_rainbow = (i_rainbow + 1) % numRainbowColors;
             i_animation = (i_animation + 1) % numAnimations;
+            display.setTextColor(rainbowColors[i_rainbow], TFT_BLACK);
+            display.setCursor(200, 5);
             display.print(animation[i_animation]);
             display.print(" ");  // Print space to clear any trailing pixels
 
@@ -372,17 +381,17 @@ void loop()
                     countdownColor = TFT_ORANGE;     // About to jiggle!
 
                 display.setTextColor(countdownColor, TFT_BLACK);  // Dynamic color with background
-                display.setCursor(5, 30);
-                sprintf (s, "Next: %3ds", currentSeconds);  // Fixed width with space padding
+                display.setCursor(5, 40);
+                sprintf (s, "%3ds", currentSeconds);  // Fixed width with space padding
                 display.print(s);
                 lastDisplayedSeconds = currentSeconds;
             }
 
             // Progress bar - only update when progress changes, with color gradient
             int barWidth = 220;
-            int barHeight = 8;
+            int barHeight = 12;
             int barX = 10;
-            int barY = 55;
+            int barY = 75;
             long elapsed = jiggle_interval - nextJiggleDiff;
             int progress = (elapsed * barWidth) / jiggle_interval;
             progress = constrain(progress, 0, barWidth);
