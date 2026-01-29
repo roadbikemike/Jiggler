@@ -11,6 +11,9 @@
 #define JIGGLE_MIN_DISTANCE 1        // Smaller movements (1-5 pixels)
 #define JIGGLE_MAX_DISTANCE 5
 #define JIGGLE_TIME_VARIANCE 20000   // +/- 20 seconds random timing variance (in milliseconds)
+#define WHEEL_SCROLL_CHANCE 50      // 50% chance to include wheel scroll
+#define WHEEL_MIN_SCROLL 1          // Minimum scroll amount
+#define WHEEL_MAX_SCROLL 3          // Maximum scroll amount
 #define INTERVAL_LIST { 60, 90, 180, 300, 600, 900 }
 #define DEFAULT_INTERVAL 2
 #define NUM_CHANNELS 3
@@ -54,6 +57,7 @@ Preferences preferences;
 
 void moveMouse()
 {
+    // Mouse cursor movement
     int distance = random(JIGGLE_MIN_DISTANCE, JIGGLE_MAX_DISTANCE);
     int x = random(X_RANDOM_RANGE) - 1;
     int y = random(Y_RANDOM_RANGE) - 1;
@@ -68,6 +72,30 @@ void moveMouse()
     {
         bleMouse.move(0 - x, 0 - y);
         delay(JIGGLE_STEP_INTERVAL);
+    }
+
+    // Random wheel scroll (50% chance)
+    if (random(100) < WHEEL_SCROLL_CHANCE)
+    {
+        int scrollAmount = random(WHEEL_MIN_SCROLL, WHEEL_MAX_SCROLL + 1);
+        int scrollDirection = (random(2) == 0) ? 1 : -1;  // Random up or down
+        int totalScroll = scrollAmount * scrollDirection;
+
+        // Scroll in one direction
+        for (int i = 0; i < scrollAmount; i++)
+        {
+            bleMouse.move(0, 0, scrollDirection);
+            delay(JIGGLE_STEP_INTERVAL);
+        }
+
+        delay(100);  // Brief pause at scroll peak
+
+        // Scroll back to original position
+        for (int i = 0; i < scrollAmount; i++)
+        {
+            bleMouse.move(0, 0, -scrollDirection);
+            delay(JIGGLE_STEP_INTERVAL);
+        }
     }
 }
 
