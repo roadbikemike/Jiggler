@@ -180,7 +180,7 @@ int lastProgress = -1;  // Track last progress bar value
 char s [22];  // String buffer for display formatting
 
 // Display Animation Variables
-char animation[] = { '◜', '◝', '◞', '◟' };  // Circular quadrant animation
+char animation[] = { '|', '/', '-', '\\' };  // Rotating line animation
 size_t numAnimations = sizeof(animation) / sizeof(animation[0]);
 int8_t i_animation = 0;
 int8_t i_rainbow = 0;  // Rainbow color index for spinner
