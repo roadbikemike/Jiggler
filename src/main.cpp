@@ -341,7 +341,8 @@ void loop()
                 display.print("Wait");
             }
 
-            // Draw static labels and jiggle count
+            // Draw static labels and jiggle count (smaller text to fit on screen)
+            display.setTextSize(2);  // Back to size 2 for bottom line
             display.setTextColor(TFT_WHITE);
             display.setCursor(5, 105);
             sprintf (s, "J:%-3lu I:%-3d C:%d", jiggleCount, intervals[current_interval], bluetoothChannelOffset);
