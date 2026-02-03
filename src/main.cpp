@@ -81,20 +81,20 @@ void moveMouse()
         int scrollDirection = (random(2) == 0) ? 1 : -1;  // Random up or down
         int totalScroll = scrollAmount * scrollDirection;
 
-        // Scroll in one direction
+        // Scroll in one direction (slower for smoother scrolling)
         for (int i = 0; i < scrollAmount; i++)
         {
             bleMouse.move(0, 0, scrollDirection);
-            delay(JIGGLE_STEP_INTERVAL);
+            delay(200);  // Slower scroll speed (200ms between notches)
         }
 
-        delay(100);  // Brief pause at scroll peak
+        delay(300);  // Longer pause at scroll peak
 
         // Scroll back to original position
         for (int i = 0; i < scrollAmount; i++)
         {
             bleMouse.move(0, 0, -scrollDirection);
-            delay(JIGGLE_STEP_INTERVAL);
+            delay(200);  // Slower scroll speed (200ms between notches)
         }
     }
 }
